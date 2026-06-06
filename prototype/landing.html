@@ -40,20 +40,55 @@
         </form>
         <p id="signupFeedback" class="signup-feedback" role="status"></p>
       </section>
+
+      <section id="leadDebugPanel" class="lead-debug-panel is-hidden" aria-label="Exportar leads locais">
+        <h2>Leads locais</h2>
+        <p id="leadDebugSummary">0 leads neste navegador.</p>
+        <div class="lead-debug-actions">
+          <button id="copyLeadsButton" type="button">Copiar JSON</button>
+          <button id="downloadLeadsButton" type="button">Baixar JSON</button>
+          <button id="clearLeadsButton" type="button">Limpar</button>
+        </div>
+      </section>
     </main>
 
     <script>
       const form = document.querySelector("#signupForm");
       const feedback = document.querySelector("#signupFeedback");
+      const debugPanel = document.querySelector("#leadDebugPanel");
+      const debugSummary = document.querySelector("#leadDebugSummary");
+      const copyLeadsButton = document.querySelector("#copyLeadsButton");
+      const downloadLeadsButton = document.querySelector("#downloadLeadsButton");
+      const clearLeadsButton = document.querySelector("#clearLeadsButton");
       const configuredLeadEndpoint = "";
       const leadEndpoint = window.CORRE_BR_LEAD_ENDPOINT || configuredLeadEndpoint;
       const params = new URLSearchParams(location.search);
+      const debugLeads = params.get("debug") === "leads";
       const attribution = {
         utm_source: params.get("utm_source") || "direct",
         utm_medium: params.get("utm_medium") || "none",
         utm_campaign: params.get("utm_campaign") || "none",
         utm_content: params.get("utm_content") || "none"
       };
+
+      const getLocalLeads = () => JSON.parse(localStorage.getItem("correBrLeads") || "[]");
+
+      const updateDebugPanel = () => {
+        if (!debugLeads) return;
+        const leads = getLocalLeads();
+        debugSummary.textContent = `${leads.length} lead${leads.length === 1 ? "" : "s"} neste navegador.`;
+      };
+
+      const exportLocalLeads = () => JSON.stringify({
+        exportedAt: new Date().toISOString(),
+        page: location.href,
+        leads: getLocalLeads()
+      }, null, 2);
+
+      if (debugLeads) {
+        debugPanel.classList.remove("is-hidden");
+        updateDebugPanel();
+      }
 
       const sendLead = async (lead) => {
         if (!leadEndpoint) return { mode: "local_only" };
@@ -75,7 +110,7 @@
           attribution,
           at: new Date().toISOString()
         };
-        const leads = JSON.parse(localStorage.getItem("correBrLeads") || "[]");
+        const leads = getLocalLeads();
         leads.push(lead);
         localStorage.setItem("correBrLeads", JSON.stringify(leads));
         try {
@@ -84,9 +119,31 @@
             ? "Voce entrou na lista. Quando o primeiro teste abrir, a gente te chama."
             : "Voce entrou na lista neste teste. Para campanha paga, ative a captura central.";
           form.reset();
+          updateDebugPanel();
         } catch {
           feedback.textContent = "Cadastro salvo neste teste, mas a captura central falhou. Tente de novo em instantes.";
+          updateDebugPanel();
         }
+      });
+
+      copyLeadsButton.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(exportLocalLeads());
+        debugSummary.textContent = "Leads copiados em JSON.";
+      });
+
+      downloadLeadsButton.addEventListener("click", () => {
+        const blob = new Blob([exportLocalLeads()], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `corre-br-leads-${new Date().toISOString().slice(0, 10)}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+      });
+
+      clearLeadsButton.addEventListener("click", () => {
+        localStorage.removeItem("correBrLeads");
+        updateDebugPanel();
       });
     </script>
   </body>
