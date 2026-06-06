@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Corre BR - Métricas Locais</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="analytics-shell">
+      <header class="analytics-header">
+        <div>
+          <span class="eyebrow">Corre BR</span>
+          <h1>Métricas Locais</h1>
+        </div>
+        <a class="play-link" href="./index.html">Jogar</a>
+      </header>
+
+      <section class="kpi-grid" aria-label="Indicadores">
+        <article class="kpi-card">
+          <span>Eventos</span>
+          <strong id="eventsCount">0</strong>
+        </article>
+        <article class="kpi-card">
+          <span>Leads</span>
+          <strong id="leadsCount">0</strong>
+        </article>
+        <article class="kpi-card">
+          <span>Pedidos</span>
+          <strong id="ordersCount">0</strong>
+        </article>
+        <article class="kpi-card">
+          <span>Anúncios</span>
+          <strong id="adsCount">0</strong>
+        </article>
+        <article class="kpi-card">
+          <span>Loja</span>
+          <strong id="storeCount">0</strong>
+        </article>
+        <article class="kpi-card">
+          <span>Mapa</span>
+          <strong id="mapCount">0</strong>
+        </article>
+      </section>
+
+      <section class="analytics-panel">
+        <div class="section-heading">
+          <h2>Funil Do Primeiro Teste</h2>
+        </div>
+        <ol id="funnelList" class="funnel-list"></ol>
+      </section>
+
+      <section class="analytics-panel">
+        <div class="section-heading">
+          <h2>Últimos Eventos</h2>
+        </div>
+        <div id="eventsTable" class="events-table"></div>
+      </section>
+
+      <section class="analytics-panel">
+        <div class="section-heading">
+          <h2>Origem Dos Leads</h2>
+        </div>
+        <div id="leadSources" class="events-table"></div>
+      </section>
+
+      <section class="analytics-actions">
+        <button id="exportButton" class="primary-button">Exportar JSON</button>
+        <button id="clearButton" class="primary-button danger-button">Limpar dados</button>
+      </section>
+    </main>
+
+    <script>
+      const events = JSON.parse(localStorage.getItem("correBrEvents") || "[]");
+      const leads = JSON.parse(localStorage.getItem("correBrLeads") || "[]");
+      const count = (name) => events.filter((event) => event.name === name).length;
+
+      const funnel = [
+        ["Tutorial iniciado", count("tutorial_start")],
+        ["Tutorial completo", count("tutorial_complete")],
+        ["Item gerado", count("item_generated")],
+        ["Item combinado", count("item_merged")],
+        ["Pedido completo", count("order_completed")],
+        ["Upgrade comprado", count("business_upgrade_purchased")],
+        ["Anúncio concluído", count("rewarded_ad_completed")]
+      ];
+
+      document.querySelector("#eventsCount").textContent = events.length;
+      document.querySelector("#leadsCount").textContent = leads.length;
+      document.querySelector("#ordersCount").textContent = count("order_completed");
+      document.querySelector("#adsCount").textContent = count("rewarded_ad_completed");
+      document.querySelector("#storeCount").textContent = count("store_viewed");
+      document.querySelector("#mapCount").textContent = count("map_viewed");
+
+      document.querySelector("#funnelList").innerHTML = funnel
+        .map(([label, value]) => `<li><span>${label}</span><strong>${value}</strong></li>`)
+        .join("");
+
+      document.querySelector("#eventsTable").innerHTML = events
+        .slice(-15)
+        .reverse()
+        .map((event) => `<div><strong>${event.name}</strong><span>${new Date(event.at).toLocaleString("pt-BR")}</span></div>`)
+        .join("");
+
+      const sourceCounts = leads.reduce((acc, lead) => {
+        const source = lead.attribution?.utm_source || "direct";
+        const content = lead.attribution?.utm_content || "none";
+        const key = `${source} / ${content}`;
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+
+      document.querySelector("#leadSources").innerHTML = Object.entries(sourceCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([source, value]) => `<div><strong>${source}</strong><span>${value} lead(s)</span></div>`)
+        .join("") || `<div><strong>Nenhum lead</strong><span>0</span></div>`;
+
+      document.querySelector("#exportButton").addEventListener("click", () => {
+        const payload = JSON.stringify({ events, leads }, null, 2);
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "corre-br-metricas.json";
+        link.click();
+        URL.revokeObjectURL(url);
+      });
+
+      document.querySelector("#clearButton").addEventListener("click", () => {
+        localStorage.removeItem("correBrEvents");
+        localStorage.removeItem("correBrLeads");
+        location.reload();
+      });
+    </script>
+  </body>
+</html>
