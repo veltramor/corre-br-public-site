@@ -45,7 +45,8 @@
     <script>
       const form = document.querySelector("#signupForm");
       const feedback = document.querySelector("#signupFeedback");
-      const leadEndpoint = "";
+      const configuredLeadEndpoint = "";
+      const leadEndpoint = window.CORRE_BR_LEAD_ENDPOINT || configuredLeadEndpoint;
       const params = new URLSearchParams(location.search);
       const attribution = {
         utm_source: params.get("utm_source") || "direct",
