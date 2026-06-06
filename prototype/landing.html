@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Corre BR - Pré-Cadastro</title>
+    <title>Corre BR - Pre-Cadastro</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -11,18 +11,18 @@
       <section class="landing-hero">
         <div class="brand-sign landing-brand">
           <span class="brand-title">Corre BR</span>
-          <span class="brand-subtitle">Negócio De Bairro</span>
+          <span class="brand-subtitle">Negocio De Bairro</span>
         </div>
-        <h1>Transforme seu corre de bairro em um império brasileiro.</h1>
+        <h1>Transforme seu corre de bairro em um imperio brasileiro.</h1>
         <p>
           Combine itens, entregue pedidos, melhore sua barraca e desbloqueie novos bairros em um jogo
-          rápido, leve e gratuito.
+          rapido, leve e gratuito.
         </p>
-        <a class="play-link" href="./index.html">Testar protótipo</a>
+        <a class="play-link" href="./index.html">Testar prototipo</a>
       </section>
 
-      <section class="signup-panel" aria-label="Pré-cadastro">
-        <h2>Entre na lista de pré-lançamento</h2>
+      <section class="signup-panel" aria-label="Pre-cadastro">
+        <h2>Entre na lista de pre-lancamento</h2>
         <form id="signupForm">
           <label>
             Nome
@@ -45,6 +45,7 @@
     <script>
       const form = document.querySelector("#signupForm");
       const feedback = document.querySelector("#signupFeedback");
+      const leadEndpoint = "";
       const params = new URLSearchParams(location.search);
       const attribution = {
         utm_source: params.get("utm_source") || "direct",
@@ -53,7 +54,18 @@
         utm_content: params.get("utm_content") || "none"
       };
 
-      form.addEventListener("submit", (event) => {
+      const sendLead = async (lead) => {
+        if (!leadEndpoint) return { mode: "local_only" };
+        const response = await fetch(leadEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(lead)
+        });
+        if (!response.ok) throw new Error("lead_endpoint_failed");
+        return { mode: "endpoint" };
+      };
+
+      form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const lead = {
           name: document.querySelector("#signupName").value.trim(),
@@ -65,8 +77,15 @@
         const leads = JSON.parse(localStorage.getItem("correBrLeads") || "[]");
         leads.push(lead);
         localStorage.setItem("correBrLeads", JSON.stringify(leads));
-        feedback.textContent = "Você entrou na lista. Quando o primeiro teste abrir, a gente te chama.";
-        form.reset();
+        try {
+          const result = await sendLead(lead);
+          feedback.textContent = result.mode === "endpoint"
+            ? "Voce entrou na lista. Quando o primeiro teste abrir, a gente te chama."
+            : "Voce entrou na lista neste teste. Para campanha paga, ative a captura central.";
+          form.reset();
+        } catch {
+          feedback.textContent = "Cadastro salvo neste teste, mas a captura central falhou. Tente de novo em instantes.";
+        }
       });
     </script>
   </body>
