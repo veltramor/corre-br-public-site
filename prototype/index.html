@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Corre BR - Protótipo Jogável</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="phone-shell" aria-label="Protótipo jogável Corre BR">
+      <section id="startScreen" class="start-screen">
+        <div class="brand-sign">
+          <span class="brand-title">Corre BR</span>
+          <span class="brand-subtitle">Negócio De Bairro</span>
+        </div>
+        <p class="start-copy">Comece com uma barraca simples, atenda pedidos e faça seu corre crescer.</p>
+        <button id="startButton" class="primary-button">Jogar</button>
+      </section>
+
+      <section id="gameScreen" class="game-screen is-hidden">
+        <header class="top-bar">
+          <div class="metric">
+            <span class="metric-label">Moedas</span>
+            <strong id="coinsValue">320</strong>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Energia</span>
+            <strong id="energyValue">18</strong>
+          </div>
+          <div class="metric level">
+            <span class="metric-label">Nível</span>
+            <strong id="levelValue">1</strong>
+            <small id="xpValue">0/100</small>
+          </div>
+        </header>
+
+        <section class="street-scene">
+          <div class="shop-sign">
+            <span>Corre BR</span>
+            <small id="shopName">Barraca Da Esquina</small>
+          </div>
+          <div class="shop-window">
+            <span id="shopStage">Barraca simples</span>
+          </div>
+          <button id="dailyRewardButton" class="daily-button">Recompensa diária</button>
+        </section>
+
+        <section class="orders-panel" aria-label="Pedidos ativos">
+          <div class="section-heading">
+            <h2>Pedidos Ativos</h2>
+            <span id="nextOrderTimer">00:52</span>
+          </div>
+          <div id="ordersList" class="orders-list"></div>
+        </section>
+
+        <section class="board-panel" aria-label="Grade de merge">
+          <div id="mergeBoard" class="merge-board"></div>
+        </section>
+
+        <section class="selected-panel">
+          <div>
+            <span id="selectedName" class="selected-name">Selecione um item</span>
+            <p id="selectedHint">Combine dois itens iguais ou entregue um pedido.</p>
+          </div>
+          <button id="sellButton" class="sell-button" disabled>Vender</button>
+        </section>
+
+        <nav class="bottom-actions" aria-label="Ações principais">
+          <button id="generateButton" class="action-button generator-button">Gerar item</button>
+          <button id="upgradeButton" class="action-button upgrade-button">Melhorar</button>
+          <button id="mapButton" class="action-button map-button">Mapa</button>
+          <button id="storeButton" class="action-button store-button">Loja</button>
+          <button id="eventButton" class="action-button event-button">Ranking</button>
+        </nav>
+      </section>
+    </main>
+
+    <div id="modal" class="modal is-hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <h2 id="modalTitle">Pedido entregue!</h2>
+        <p id="modalText">O corre rendeu.</p>
+        <div id="modalActions" class="modal-actions"></div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js");
+      }
+    </script>
+  </body>
+</html>
