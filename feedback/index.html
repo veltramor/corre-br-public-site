@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Corre BR - Feedback de Teste</title>
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="sign">
+          <strong>Corre BR</strong>
+          <span>Feedback de Teste</span>
+        </div>
+        <h1>Conte como foi testar o Corre BR.</h1>
+        <p>Preencha depois de instalar o APK ou jogar pelo navegador. O resumo ajuda a fechar os testes de Android e onboarding.</p>
+      </section>
+
+      <section class="screens">
+        <h2>Formulario rapido</h2>
+        <form id="feedbackForm" class="feedback-form">
+          <label>
+            Nome ou apelido
+            <input id="tester" required />
+          </label>
+          <label>
+            Celular
+            <input id="device" placeholder="Ex: Moto G, Galaxy A03" />
+          </label>
+          <label>
+            Android
+            <input id="androidVersion" placeholder="Ex: 12, 13, 14" />
+          </label>
+          <label>
+            O app instalou?
+            <select id="installResult">
+              <option value="ok">Sim</option>
+              <option value="failed">Nao</option>
+              <option value="browser_only">Testei so no navegador</option>
+            </select>
+          </label>
+          <label>
+            Abriu sem tela branca?
+            <select id="firstOpen">
+              <option value="yes">Sim</option>
+              <option value="no">Nao</option>
+              <option value="browser_only">Testei so no navegador</option>
+            </select>
+          </label>
+          <label>
+            Tutorial ficou claro?
+            <select id="tutorial">
+              <option value="yes">Sim</option>
+              <option value="partial">Mais ou menos</option>
+              <option value="no">Nao</option>
+            </select>
+          </label>
+          <label>
+            Nota de diversao
+            <select id="funScore">
+              <option value="5">5 - jogaria de novo</option>
+              <option value="4">4 - gostei</option>
+              <option value="3">3 - ok</option>
+              <option value="2">2 - fraco</option>
+              <option value="1">1 - nao gostei</option>
+            </select>
+          </label>
+          <label>
+            Jogaria de novo amanha?
+            <select id="wouldPlayAgain">
+              <option value="yes">Sim</option>
+              <option value="maybe">Talvez</option>
+              <option value="no">Nao</option>
+            </select>
+          </label>
+          <label>
+            O que travou, confundiu ou chamou atencao?
+            <textarea id="notes" rows="5"></textarea>
+          </label>
+          <button class="primary-button" type="submit">Gerar resumo</button>
+        </form>
+      </section>
+
+      <section class="screens">
+        <h2>Resumo para enviar</h2>
+        <textarea id="summary" rows="10" readonly></textarea>
+        <div class="actions">
+          <button id="copyButton" class="primary-button" type="button">Copiar resumo</button>
+          <a class="secondary" href="../android-teste/">Voltar ao teste Android</a>
+        </div>
+        <p id="copyFeedback"></p>
+      </section>
+    </main>
+
+    <script>
+      const form = document.querySelector("#feedbackForm");
+      const summary = document.querySelector("#summary");
+      const copyButton = document.querySelector("#copyButton");
+      const copyFeedback = document.querySelector("#copyFeedback");
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const data = {
+          date: new Date().toISOString().slice(0, 10),
+          tester: document.querySelector("#tester").value.trim(),
+          device: document.querySelector("#device").value.trim() || "NA",
+          android_version: document.querySelector("#androidVersion").value.trim() || "NA",
+          install_result: document.querySelector("#installResult").value,
+          first_open_ok: document.querySelector("#firstOpen").value,
+          completed_tutorial: document.querySelector("#tutorial").value,
+          fun_score_1_5: document.querySelector("#funScore").value,
+          would_play_again: document.querySelector("#wouldPlayAgain").value,
+          notes: document.querySelector("#notes").value.trim() || "sem observacao"
+        };
+        localStorage.setItem("correBrTesterFeedback", JSON.stringify(data));
+        summary.value = [
+          "Corre BR - feedback de teste",
+          `date=${data.date}`,
+          `tester=${data.tester}`,
+          `device=${data.device}`,
+          `android_version=${data.android_version}`,
+          `install_result=${data.install_result}`,
+          `first_open_ok=${data.first_open_ok}`,
+          `completed_tutorial=${data.completed_tutorial}`,
+          `fun_score_1_5=${data.fun_score_1_5}`,
+          `would_play_again=${data.would_play_again}`,
+          `notes=${data.notes}`
+        ].join("\n");
+      });
+
+      copyButton.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(summary.value);
+        copyFeedback.textContent = "Resumo copiado.";
+      });
+    </script>
+  </body>
+</html>
