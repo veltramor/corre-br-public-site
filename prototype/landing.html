@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Corre BR - Pré-Cadastro</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="landing-shell">
+      <section class="landing-hero">
+        <div class="brand-sign landing-brand">
+          <span class="brand-title">Corre BR</span>
+          <span class="brand-subtitle">Negócio De Bairro</span>
+        </div>
+        <h1>Transforme seu corre de bairro em um império brasileiro.</h1>
+        <p>
+          Combine itens, entregue pedidos, melhore sua barraca e desbloqueie novos bairros em um jogo
+          rápido, leve e gratuito.
+        </p>
+        <a class="play-link" href="./index.html">Testar protótipo</a>
+      </section>
+
+      <section class="signup-panel" aria-label="Pré-cadastro">
+        <h2>Entre na lista de pré-lançamento</h2>
+        <form id="signupForm">
+          <label>
+            Nome
+            <input id="signupName" name="name" required autocomplete="name" />
+          </label>
+          <label>
+            WhatsApp ou e-mail
+            <input id="signupContact" name="contact" required autocomplete="email" />
+          </label>
+          <label>
+            Cidade
+            <input id="signupCity" name="city" required autocomplete="address-level2" />
+          </label>
+          <button class="primary-button" type="submit">Quero jogar primeiro</button>
+        </form>
+        <p id="signupFeedback" class="signup-feedback" role="status"></p>
+      </section>
+    </main>
+
+    <script>
+      const form = document.querySelector("#signupForm");
+      const feedback = document.querySelector("#signupFeedback");
+      const params = new URLSearchParams(location.search);
+      const attribution = {
+        utm_source: params.get("utm_source") || "direct",
+        utm_medium: params.get("utm_medium") || "none",
+        utm_campaign: params.get("utm_campaign") || "none",
+        utm_content: params.get("utm_content") || "none"
+      };
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const lead = {
+          name: document.querySelector("#signupName").value.trim(),
+          contact: document.querySelector("#signupContact").value.trim(),
+          city: document.querySelector("#signupCity").value.trim(),
+          attribution,
+          at: new Date().toISOString()
+        };
+        const leads = JSON.parse(localStorage.getItem("correBrLeads") || "[]");
+        leads.push(lead);
+        localStorage.setItem("correBrLeads", JSON.stringify(leads));
+        feedback.textContent = "Você entrou na lista. Quando o primeiro teste abrir, a gente te chama.";
+        form.reset();
+      });
+    </script>
+  </body>
+</html>
